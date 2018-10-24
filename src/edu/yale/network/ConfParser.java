@@ -10,6 +10,7 @@ class ConfParser {
     private final int port;
     private final int timeout;
     private final int cacheSize;
+    private final int threadPoolSize;
     private final String monitorStr;
     private HashMap<String, String> conf = new HashMap<>();
     private HashMap<String, String> docRoots = new HashMap<>();
@@ -37,9 +38,16 @@ class ConfParser {
             String[] tokens = line.split("\\s+");
             if (tokens.length != 2) throw new IOException("Illegal conf: " + line);
             if (virtualHost) {
-                if (tokens[0].equals("DocumentRoot")) docRoot = tokens[1];
-                else if (tokens[0].equals("ServerName")) serverName = tokens[1];
-                else throw new IOException("Illegal conf: " + line);
+                switch (tokens[0]) {
+                    case "DocumentRoot":
+                        docRoot = tokens[1];
+                        break;
+                    case "ServerName":
+                        serverName = tokens[1];
+                        break;
+                    default:
+                        throw new IOException("Illegal conf: " + line);
+                }
             } else {
                 conf.put(tokens[0].toLowerCase(), tokens[1]);
             }
@@ -49,6 +57,10 @@ class ConfParser {
         if (docRoots.isEmpty()) {
             throw new IOException("Illegal conf: missing virtual hosts.");
         }
+
+        String threadPoolSizeStr = conf.getOrDefault("threadpoolsize", "4");
+        threadPoolSize = Integer.parseInt(threadPoolSizeStr);
+        if (threadPoolSize < 1) throw new IOException("Illegal conf: threadpool size = " + threadPoolSize);
 
         String portStr = conf.getOrDefault("listen", "6789");
         port = Integer.parseInt(portStr);
@@ -62,23 +74,15 @@ class ConfParser {
         monitorStr = conf.getOrDefault("monitor", "DummyMonitor");
     }
 
-    int getTimeout() {
-        return timeout;
-    }
+    int getTimeout() { return timeout; }
 
-    int getPort() {
-        return port;
-    }
+    int getPort() { return port; }
 
-    int getCacheSize() {
-        return cacheSize;
-    }
+    int getCacheSize() { return cacheSize; }
 
-    String getMonitor() {
-        return monitorStr;
-    }
+    int getThreadPoolSize() { return threadPoolSize; }
 
-    HashMap<String, String> getDocRoots() {
-        return docRoots;
-    }
+    String getMonitor() { return monitorStr; }
+
+    HashMap<String, String> getDocRoots() { return docRoots; }
 }

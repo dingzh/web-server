@@ -28,6 +28,7 @@ public class Main {
         int port = conf.getPort();
         int timeout = conf.getTimeout();
         int cacheSize = conf.getCacheSize();
+        int threadPoolSize = conf.getThreadPoolSize();
         String monitorStr = conf.getMonitor();
 
         Monitor monitor;
@@ -42,17 +43,17 @@ public class Main {
 
         HashMap<String, String> docRoots = conf.getDocRoots();
 
-        WebServer ws = new SequentialServer(port, cacheSize, monitor, timeout, docRoots);
-
-//        try {
-//            Class webServerClass = Class.forName("edu.yale.network" + webServerStr);
-//            ws = (WebServer) webServerClass
-//                    .getDeclaredConstructor(Integer.TYPE, Integer.TYPE, Monitor.class, Integer.TYPE, HashMap.class)
-//                    .newInstance(port, cacheSize, monitor, timeout, docRoots);
-//        } catch (Exception ex) {
-//            System.out.println("Server not implemented: " + webServerStr);
-//            return ;
-//        }
+//        WebServer ws = new SequentialServer(port, cacheSize, monitor, timeout, docRoots);
+        WebServer ws;
+        try {
+            Class webServerClass = Class.forName("edu.yale.network." + webServerStr);
+            ws = (WebServer) webServerClass
+                    .getDeclaredConstructor(Integer.TYPE, Integer.TYPE, Integer.TYPE, Monitor.class, Integer.TYPE, HashMap.class)
+                    .newInstance(port, cacheSize, threadPoolSize, monitor, timeout, docRoots);
+        } catch (Exception ex) {
+            System.out.println("Server not implemented: " + webServerStr);
+            return ;
+        }
 
         ws.start();
     }

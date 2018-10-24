@@ -1,7 +1,8 @@
 package edu.yale.network;
 
 import java.io.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -44,10 +45,10 @@ class HttpRequestParser {
         }
 
         if (params.containsKey("If-Modified-Since")) {
-            LocalDateTime ifModifiedSince = LocalDateTime.parse(params.get("If-Modified-Since"), RFC_1123_DATE_TIME);
-            params.put("If-Modified-Since", ifModifiedSince.toString());
+            Instant parsedInstant = ZonedDateTime.parse(params.get("If-Modified-Since"), RFC_1123_DATE_TIME).toInstant();
+            params.put("If-Modified-Since", parsedInstant.toString());
         } else {
-            params.put("If-Modified-Since", "1997-01-03T10:15:30"); // Default value
+            params.put("If-Modified-Since", Instant.MIN.toString()); // Default value
         }
     }
 
