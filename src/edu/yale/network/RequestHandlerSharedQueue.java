@@ -12,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -20,7 +21,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 public class RequestHandlerSharedQueue implements Runnable {
     // thread safe : logger, synchronize on cache, other variable are not shared
     private static final Logger logger = Logger.getLogger(RequestHandler.class.getCanonicalName());
-    private static final HashMap<Path, CachedBytes> cache = new HashMap<>();
+    private static final ConcurrentHashMap<Path, CachedBytes> cache = new ConcurrentHashMap<>();
     private static final String STATUS_OKAY = "HTTP/1.0 200: OK";
     private static final String STATUS_ERR = "HTTP/1.0 400 Bad Request";
     private static final String STATUS_OVERLOAD = "HTTP/1.0 503: Service Unavailable";
@@ -133,21 +134,19 @@ public class RequestHandlerSharedQueue implements Runnable {
         String contentType = URLConnection.getFileNameMap().getContentTypeFor(uri);
         if (contentType == null) contentType = "text/plain; charset=utf-8";
 
-        synchronized (cache) { // if want minimize this code block, need to copy body[] out
-            if (cache.containsKey(filePath)) { // cache hit
-                CachedBytes cb = cache.get(filePath);
-                Instant lastModified = cb.getLastModified();
-                if (!ifModifiedSince.isBefore(lastModified)) {
-                    sendHeader(raw, STATUS_NOT_MODIFIED, true);
-                    logger.info("Cache Hit, not modified: " + uri);
-                } else {
-                    byte[] body = cb.getBytes();
-                    sendResponse(raw, STATUS_OKAY, contentType, body, lastModified);
-                    logger.info("Requested File sent(cache hit): " + uri);
-                }
-                try {connection.close();} catch (IOException e) {}
-                return ;
+        if (cache.containsKey(filePath)) { // cache hit
+            CachedBytes cb = cache.get(filePath);
+            Instant lastModified = cb.getLastModified();
+            if (!ifModifiedSince.isBefore(lastModified)) {
+                sendHeader(raw, STATUS_NOT_MODIFIED, true);
+                logger.info("Cache Hit, not modified: " + uri);
+            } else {
+                byte[] body = cb.getBytes();
+                sendResponse(raw, STATUS_OKAY, contentType, body, lastModified);
+                logger.info("Requested File sent(cache hit): " + uri);
             }
+            try {connection.close();} catch (IOException e) {}
+            return ;
         }
 
         // read file modified time which at the same time checked if file exists
@@ -179,10 +178,8 @@ public class RequestHandlerSharedQueue implements Runnable {
         try { // read file and send back, maybe put into cache
             byte[] fileBytes = Files.readAllBytes(filePath);
 
-            synchronized (cache) {
-                if (cache.size() < cacheSize) {
-                    cache.put(filePath, new CachedBytes(fileBytes, lastModified));
-                }
+            if (cache.size() < cacheSize) {
+                cache.put(filePath, new CachedBytes(fileBytes, lastModified));
             }
             sendResponse(raw, STATUS_OKAY, contentType, fileBytes, lastModified);
             try {connection.close();} catch (IOException e) {}

@@ -34,7 +34,7 @@ public class SequentialServer implements WebServer {
                 Socket connection = server.accept();
                 RequestHandler requestHandler =
                         new RequestHandler(connection, cacheSize, monitor, timeout, docRoots);
-                requestHandler.process(connection);
+                requestHandler.run();
             }
         } catch (IOException ex) {
             logger.log(Level.SEVERE, "Server exits: ", ex);
