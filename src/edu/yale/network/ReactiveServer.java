@@ -26,6 +26,7 @@ public class ReactiveServer extends WebServer {
     }
 
     public void start() {
+        logger.info(ReactiveServer.class.getSimpleName() + " started.");
         Dispatcher dispatcher = new Dispatcher();
         ServerSocketChannel sch = openServerChannel(port);
 
