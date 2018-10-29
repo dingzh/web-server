@@ -1,6 +1,12 @@
 package edu.yale.network;
 
 
+import edu.yale.network.Util.Monitor;
+import edu.yale.network.reactiveUtil.Acceptor;
+import edu.yale.network.reactiveUtil.Dispatcher;
+import edu.yale.network.reactiveUtil.IReadWriteHandlerFactory;
+import edu.yale.network.reactiveUtil.ServerReadWriteHandlerFactory;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -10,22 +16,13 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ReactiveServer implements WebServer {
+public class ReactiveServer extends WebServer {
 
-    private final int port;
-    private final int cacheSize;
-    private final int timeout;
-    private final Monitor monitor;
-    private HashMap<String, String> docRoots;
-    private final Logger logger = Logger.getLogger(SequentialServer.class.getSimpleName());
+    private final Logger logger = Logger.getLogger(ReactiveServer.class.getSimpleName());
 
     public ReactiveServer(int port, int cacheSize, int threadPoolSize,
                           Monitor monitor, int timeout, HashMap<String, String> docRoots) {
-        this.port = port;
-        this.cacheSize = cacheSize;
-        this.timeout = timeout;
-        this.monitor = monitor;
-        this.docRoots = docRoots;
+        super(port, cacheSize, threadPoolSize, monitor, timeout, docRoots);
     }
 
     public void start() {

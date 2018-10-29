@@ -1,12 +1,14 @@
 package edu.yale.network;
 
+import edu.yale.network.Util.Monitor;
+import edu.yale.network.requesthandlers.RequestHandlerSharedQueue;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Queue;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -15,26 +17,13 @@ import java.util.logging.Logger;
 import static java.lang.Thread.sleep;
 
 
-public class SharedQueueServer implements WebServer {
+public class SharedQueueServer extends WebServer {
 
-    private final int port;
     private final Logger logger = Logger.getLogger(SequentialServer.class.getSimpleName());
 
-    private final int cacheSize;
-    private final int timeout;
-    private final int threadPoolSize;
-    private final Monitor monitor;
-    private final HashMap<String, String> docRoots;
-
-
     SharedQueueServer(int port, int cacheSize, int threadPoolSize,
-                        Monitor monitor, int timeout, HashMap<String, String> docRoots) {
-        this.port = port;
-        this.cacheSize = cacheSize;
-        this.monitor = monitor;
-        this.timeout = timeout * 1000;
-        this.docRoots = docRoots;
-        this.threadPoolSize = threadPoolSize;
+                      Monitor monitor, int timeout, HashMap<String, String> docRoots) {
+        super(port, cacheSize, threadPoolSize, monitor, timeout, docRoots);
     }
 
     public void start() {

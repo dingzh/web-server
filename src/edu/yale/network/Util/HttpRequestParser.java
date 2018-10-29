@@ -1,4 +1,4 @@
-package edu.yale.network;
+package edu.yale.network.Util;
 
 import java.io.*;
 import java.time.Instant;
@@ -7,12 +7,12 @@ import java.util.HashMap;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 
-class HttpRequestParser {
+public class HttpRequestParser {
 
     private final String[] tokens;
     private final HashMap<String, String> params = new HashMap<>();
 
-    HttpRequestParser(InputStream ins) throws IOException {
+    public HttpRequestParser(InputStream ins) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(ins));
 
         String requestLine = reader.readLine();
@@ -52,11 +52,11 @@ class HttpRequestParser {
         }
     }
 
-    String getUri() {
+    public String getUri() {
         return tokens[1];
     }
 
-    String getParam(String key) {
+    public String getParam(String key) {
         return params.get(key);
     }
 

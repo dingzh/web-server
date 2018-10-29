@@ -1,4 +1,6 @@
-package edu.yale.network;
+package edu.yale.network.reactiveUtil;
+
+import edu.yale.network.Util.Monitor;
 
 import java.util.HashMap;
 
@@ -9,7 +11,7 @@ public class ServerReadWriteHandlerFactory implements IReadWriteHandlerFactory {
     private final Monitor monitor;
     private final HashMap<String, String> docRoots;
 
-    ServerReadWriteHandlerFactory(int cacheSize, int timeout, Monitor monitor, HashMap<String, String> docRoots) {
+    public ServerReadWriteHandlerFactory(int cacheSize, int timeout, Monitor monitor, HashMap<String, String> docRoots) {
         this.cacheSize = cacheSize;
         this.timeout = timeout;
         this.monitor = monitor;

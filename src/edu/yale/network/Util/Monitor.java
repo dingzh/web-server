@@ -1,4 +1,4 @@
-package edu.yale.network;
+package edu.yale.network.Util;
 
 public interface Monitor {
     boolean overload();

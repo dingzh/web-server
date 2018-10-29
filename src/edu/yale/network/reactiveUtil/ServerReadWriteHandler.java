@@ -1,4 +1,10 @@
-package edu.yale.network;
+package edu.yale.network.reactiveUtil;
+
+import edu.yale.network.ReactiveServer;
+import edu.yale.network.Util.CachedBytes;
+import edu.yale.network.Util.HttpRequestParser;
+import edu.yale.network.Util.Monitor;
+import edu.yale.network.reactiveUtil.IReadWriteHandler;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -23,7 +29,7 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
     private static final String STATUS_OVERLOAD = "HTTP/1.0 503: Service Unavailable";
     private static final String STATUS_NOT_MODIFIED = "HTPP/1.0 304: Not Modified";
 
-    private final Logger logger = Logger.getLogger(SequentialServer.class.getSimpleName());
+    private static final Logger logger = Logger.getLogger(ReactiveServer.class.getSimpleName());
     // shared cache between all handlers
     private static final HashMap<Path, CachedBytes> cache = new HashMap<>();
     private final int cacheSize;
@@ -67,7 +73,6 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
             generateResponse(hrp);
             responseReady = true;
             headerBuffer.flip();
-            if (bodyBuffer != null) bodyBuffer.flip();
         }
         updateState(key);
     }
@@ -88,7 +93,7 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
             }
         }
 
-        inBuffer.compact();
+        inBuffer.clear();
         request += requestBuf.toString();
         if (request.endsWith("\r\n\r\n")) {
             requestComplete = true;
@@ -208,7 +213,7 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
                 generateHeader(STATUS_OKAY, true);
                 appendHeader(lastModified, contentType, body);
                 bodyBuffer = ByteBuffer.wrap(body);
-                logger.info("Requested File sent(cache hit): " + uri);
+//                logger.info("Requested File sent(cache hit): " + uri);
             }
             return ;
         }
@@ -244,7 +249,8 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
             }
             generateHeader(STATUS_OKAY, true);
             appendHeader(lastModified, contentType, fileBytes);
-            logger.info("Request File sent: " + filePath.toString());
+            bodyBuffer = ByteBuffer.wrap(fileBytes);
+//            logger.info("Request File sent: " + filePath.toString());
         } catch (OutOfMemoryError ex) {
             generateHeader(STATUS_ERR, false);
             logger.severe("Requested File is too large: " + filePath.toString());
@@ -258,7 +264,7 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
         StringBuffer response = new StringBuffer();
         response.append(responseCode) .append("\r\n")
                 .append("Date: ").append(ZonedDateTime.now(ZoneOffset.UTC).format(RFC_1123_DATE_TIME)) .append("\r\n")
-                .append("Server: ").append(SequentialServer.class.getSimpleName()) .append("\r\n");
+                .append("Server: ").append(ReactiveServer.class.getSimpleName()) .append("\r\n");
         if (!partial) {
             response.append("\r\n\r\n");
         }

@@ -1,5 +1,8 @@
 package edu.yale.network;
 
+import edu.yale.network.Util.Monitor;
+import edu.yale.network.requesthandlers.RequestHandlerSequential;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,10 +11,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class PerThreadServer implements WebServer {
+public class PerThreadServer extends WebServer {
 
     private final int port;
-    private final Logger logger = Logger.getLogger(SequentialServer.class.getSimpleName());
+    private final Logger logger = Logger.getLogger(PerThreadServer.class.getSimpleName());
 
     private final int cacheSize;
     private final int timeout;
@@ -20,6 +23,7 @@ public class PerThreadServer implements WebServer {
 
     PerThreadServer(int port, int cacheSize, int threadPoolSize,
                     Monitor monitor, int timeout, HashMap<String, String> docRoots) {
+        super(port, cacheSize, threadPoolSize, monitor, timeout, docRoots);
         this.port = port;
         this.cacheSize = cacheSize;
         this.monitor = monitor;
@@ -33,9 +37,9 @@ public class PerThreadServer implements WebServer {
 
             while (true) {
                 Socket connection = server.accept();
-                RequestHandler requestHandler =
-                        new RequestHandler(connection, cacheSize, monitor, timeout, docRoots);
-                Thread t = new Thread(requestHandler);
+                RequestHandlerSequential requestHandlerSequential =
+                        new RequestHandlerSequential(connection, cacheSize, monitor, timeout, docRoots);
+                Thread t = new Thread(requestHandlerSequential);
                 t.start();
             }
         } catch (IOException ex) {

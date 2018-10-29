@@ -1,37 +1,23 @@
 package edu.yale.network;
 
+import edu.yale.network.Util.Monitor;
+import edu.yale.network.requesthandlers.RequestHandlerSharedWelcome;
+
 import java.io.*;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.lang.Thread.sleep;
 
 
-public class SharedWelcomeServer implements WebServer {
+public class SharedWelcomeServer extends WebServer {
 
-    private final int port;
     private final Logger logger = Logger.getLogger(SequentialServer.class.getSimpleName());
-
-    private final int cacheSize;
-    private final int timeout;
-    private final int threadPoolSize;
-    private final Monitor monitor;
-    private final HashMap<String, String> docRoots;
-
 
     SharedWelcomeServer(int port, int cacheSize, int threadPoolSize,
                         Monitor monitor, int timeout, HashMap<String, String> docRoots) {
-        this.port = port;
-        this.cacheSize = cacheSize;
-        this.monitor = monitor;
-        this.timeout = timeout * 1000;
-        this.docRoots = docRoots;
-        this.threadPoolSize = threadPoolSize;
+        super(port, cacheSize, threadPoolSize, monitor, timeout, docRoots);
     }
 
     public void start() {
@@ -45,9 +31,12 @@ public class SharedWelcomeServer implements WebServer {
                 threadPool[i] = new Thread(requestHandler);
                 threadPool[i].start();
             }
-            threadPool[0].join();
+            Thread.currentThread().join();
         } catch (InterruptedException ex) {
             logger.info("Server interrupted, existing.");
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "Fail open server socket, server exits: ", ex);
+        } finally {
             for (int i = 0; i < threadPoolSize; ++i) {
                 threadPool[i].interrupt();
                 try {
@@ -57,8 +46,6 @@ public class SharedWelcomeServer implements WebServer {
                     threadPool[i].stop();
                 }
             }
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, "Fail open server socket, server exits: ", ex);
         }
     }
 }

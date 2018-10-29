@@ -1,4 +1,4 @@
-package edu.yale.network;
+package edu.yale.network.Util;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 
-class ConfParser {
+public class ConfParser {
     private final int port;
     private final int timeout;
     private final int cacheSize;
@@ -15,7 +15,7 @@ class ConfParser {
     private HashMap<String, String> conf = new HashMap<>();
     private HashMap<String, String> docRoots = new HashMap<>();
 
-    ConfParser(Path confPath) throws IOException{
+    public ConfParser(Path confPath) throws IOException{
 
         List<String> lines = Files.readAllLines(confPath);
         boolean virtualHost = false;
@@ -74,15 +74,15 @@ class ConfParser {
         monitorStr = conf.getOrDefault("monitor", "DummyMonitor");
     }
 
-    int getTimeout() { return timeout; }
+    public int getTimeout() { return timeout; }
 
-    int getPort() { return port; }
+    public int getPort() { return port; }
 
-    int getCacheSize() { return cacheSize; }
+    public int getCacheSize() { return cacheSize; }
 
-    int getThreadPoolSize() { return threadPoolSize; }
+    public int getThreadPoolSize() { return threadPoolSize; }
 
-    String getMonitor() { return monitorStr; }
+    public String getMonitor() { return monitorStr; }
 
-    HashMap<String, String> getDocRoots() { return docRoots; }
+    public HashMap<String, String> getDocRoots() { return docRoots; }
 }

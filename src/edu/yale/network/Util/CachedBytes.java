@@ -1,21 +1,21 @@
-package edu.yale.network;
+package edu.yale.network.Util;
 
 import java.time.Instant;
 
-class CachedBytes {
+public class CachedBytes {
     private Instant lastModified;
     private byte[] bytes;
 
-    CachedBytes(byte[] bytes, Instant lastModified) {
+    public CachedBytes(byte[] bytes, Instant lastModified) {
         this.bytes = bytes;
         this.lastModified = lastModified;
     }
 
-    Instant getLastModified() {
+    public Instant getLastModified() {
         return lastModified;
     }
 
-    byte[] getBytes() {
+    public byte[] getBytes() {
         return bytes;
     }
 }

@@ -1,5 +1,9 @@
-package edu.yale.network;
+package edu.yale.network.reactiveUtil;
 
+
+import edu.yale.network.ReactiveServer;
+import edu.yale.network.reactiveUtil.IAcceptHandler;
+import edu.yale.network.reactiveUtil.IReadWriteHandler;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -10,7 +14,7 @@ import java.util.logging.Logger;
 
 public class Dispatcher implements Runnable {
 
-    private final Logger logger = Logger.getLogger(SequentialServer.class.getSimpleName());
+    private final Logger logger = Logger.getLogger(ReactiveServer.class.getSimpleName());
     private Selector selector;
 
     public Dispatcher() {
