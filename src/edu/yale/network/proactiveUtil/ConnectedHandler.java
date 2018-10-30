@@ -1,7 +1,6 @@
 package edu.yale.network.proactiveUtil;
 
 import edu.yale.network.ProactiveServer;
-import edu.yale.network.ResponseSentHandler;
 import edu.yale.network.Util.CachedBytes;
 import edu.yale.network.Util.HttpRequestParser;
 import edu.yale.network.Util.ServerConf;
