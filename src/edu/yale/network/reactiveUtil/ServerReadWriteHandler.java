@@ -4,7 +4,6 @@ import edu.yale.network.ReactiveServer;
 import edu.yale.network.Util.CachedBytes;
 import edu.yale.network.Util.HttpRequestParser;
 import edu.yale.network.Util.Monitor;
-import edu.yale.network.reactiveUtil.IReadWriteHandler;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -18,6 +17,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -170,18 +170,39 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
         }
 
         Path docRoot = FileSystems.getDefault().getPath(docRoots.get(host));
-        if (uri.contains("?")) { // cgi request
-            // parse params and construct xx
+        if (uri.contains("?") || uri.contains("cgi")) { // cgi request
             String tokens[] = uri.split("\\?");
-            if (tokens.length > 2) {
+            String cgi = tokens[0].substring(1);
+            Path cgiFile = docRoot.resolve(cgi);
+            if (!Files.exists(cgiFile) || !Files.isExecutable(cgiFile)) {
                 generateHeader(STATUS_ERR, false);
                 logger.info("Rejecting request for " + uri);
                 return ;
             }
-            String cgi = tokens[0];
-            String cgiParams = tokens[1];
-            // TODO parsing and validate params
-            // TODO build process, return file path, write back to cache
+            ProcessBuilder pb = new ProcessBuilder(cgiFile.toString());
+            Map<String, String> env = pb.environment();
+            if (tokens.length > 1) env.put("QUERY_STRING", tokens[1]);
+            env.put("REQUEST_METHOD", "GET");
+            try {
+                Process process = pb.start();
+                process.waitFor();
+                InputStreamReader is = new InputStreamReader(process.getInputStream());
+                BufferedReader r = new BufferedReader(is);
+
+                String contentType = r.readLine();
+                r.readLine();
+                StringBuffer content = new StringBuffer();
+                while (r.ready()) {
+                    content.append(r.readLine());
+                }
+                generateHeader(STATUS_OKAY, true);
+                byte[] body = content.toString().getBytes();
+                appendHeader(null, contentType, body);
+                bodyBuffer = ByteBuffer.wrap(body);
+            } catch (Exception ex) {
+                generateHeader(STATUS_ERR, false);
+                bodyBuffer = null;
+            }
             return ;
         }
 
@@ -261,6 +282,7 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
     }
 
     private void generateHeader(String responseCode, boolean partial) {
+        headerBuffer.clear();
         StringBuffer response = new StringBuffer();
         response.append(responseCode) .append("\r\n")
                 .append("Date: ").append(ZonedDateTime.now(ZoneOffset.UTC).format(RFC_1123_DATE_TIME)) .append("\r\n")
@@ -274,11 +296,12 @@ public class ServerReadWriteHandler implements IReadWriteHandler {
 
     private void appendHeader(Instant lastModified, String contentType, byte[] content) {
         StringBuffer response = new StringBuffer();
-        String lastModifiedStr = ZonedDateTime.ofInstant(lastModified, ZoneOffset.UTC).format(RFC_1123_DATE_TIME);
+        if (lastModified != null) {
+            String lastModifiedStr = ZonedDateTime.ofInstant(lastModified, ZoneOffset.UTC).format(RFC_1123_DATE_TIME);
+            response.append("Last-Modified: ").append(lastModifiedStr).append("\r\n");
+        }
 
-        response.append("Last-Modified: ").append(lastModifiedStr)
-                .append("\r\n")
-                .append("Content-Length: ").append(content.length)
+        response.append("Content-Length: ").append(content.length)
                 .append("\r\n")
                 .append("Content-Type: ").append(contentType)
                 .append("\r\n\r\n");

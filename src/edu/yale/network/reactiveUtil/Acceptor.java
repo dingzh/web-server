@@ -1,9 +1,9 @@
 package edu.yale.network.reactiveUtil;
 
-import edu.yale.network.reactiveUtil.IReadWriteHandlerFactory;
-
-import java.nio.channels.*;
 import java.io.IOException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 
 public class Acceptor implements IAcceptHandler {
 

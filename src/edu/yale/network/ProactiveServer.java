@@ -1,6 +1,5 @@
 package edu.yale.network;
 
-import edu.yale.network.Util.Attachment;
 import edu.yale.network.Util.Monitor;
 import edu.yale.network.Util.ServerConf;
 import edu.yale.network.proactiveUtil.ConnectedHandler;
@@ -25,9 +24,8 @@ public class ProactiveServer extends WebServer{
     public void start() {
         try (AsynchronousServerSocketChannel listener = AsynchronousServerSocketChannel.open()) {
             listener.bind(new InetSocketAddress(port));
-            Attachment attachment = new Attachment(serverConf, listener);
             ConnectedHandler connectedHandler = new ConnectedHandler(serverConf, listener) ;
-            listener.accept(attachment, connectedHandler);
+            listener.accept(null, connectedHandler);
 
             Thread.currentThread().join();
         } catch (IOException ex) {

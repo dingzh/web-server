@@ -1,9 +1,7 @@
 package edu.yale.network.reactiveUtil;
 
-import edu.yale.network.reactiveUtil.IChannelHandler;
-
-import java.nio.channels.SelectionKey;
 import java.io.IOException;
+import java.nio.channels.SelectionKey;
 
 public interface IReadWriteHandler extends IChannelHandler {
 

@@ -3,7 +3,7 @@ package edu.yale.network;
 import edu.yale.network.Util.Monitor;
 import edu.yale.network.requesthandlers.RequestHandlerSharedQueue;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayDeque;
@@ -13,8 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.lang.Thread.sleep;
 
 
 public class SharedQueueServer extends WebServer {
